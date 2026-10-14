@@ -1,10 +1,10 @@
-const userModel = require("../models/userModel");
+const userModel = require("../models/usermodel");
 
 //GET DONAR LIST
 const getDonarsListController = async (req, res) => {
   try {
     const donarData = await userModel
-      .find({ role: "donar" })
+      .find({ role: "donor" })
       .sort({ createdAt: -1 });
 
     return res.status(200).send({
@@ -97,4 +97,3 @@ module.exports = {
 
 
 
-  

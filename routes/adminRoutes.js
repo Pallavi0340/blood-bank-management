@@ -4,7 +4,7 @@ const {
   getDonarsListController,
   getHospitalListController,
   getOrgListController,
-   deleteDonarController,
+  deleteDonarController,
 } = require("../controllers/adminController");
 const adminMiddleware = require("../middlewares/adminMiddleware");
 

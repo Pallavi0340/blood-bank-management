@@ -12,7 +12,14 @@ export const userLogin = createAsyncThunk(
             if (data.success) {
                 alert(data.message);
                 localStorage.setItem("token", data.token);
-                window.location.replace('/home');
+
+                if (data.user.role === "donor") {
+        window.location.replace('/donation');
+    } else if (data.user.role === "admin") {
+        window.location.replace('/admin');
+    } else {
+        window.location.replace('/home');
+    }
             }
             return data;
         } catch (error) {

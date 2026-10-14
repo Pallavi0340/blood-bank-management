@@ -10,14 +10,21 @@ const createInventoryController = async (req, res) => {
     if (!user) {
       throw new Error('User Not Found')
     }
-    const organisationUser = await usermodel.findOne({
-    role: "organisation"
-});
+    const organisationUser = await usermodel.findById(req.userId);
 
-if (!organisationUser) {
-    throw new Error("Organisation Not Found");
-}
-req.body.organisation = organisationUser._id;
+    if (!organisationUser || organisationUser.role !== "organisation") {
+      return res.status(403).send({
+        success: false,
+        message: "Only an organisation can manage this inventory",
+      });
+    }
+
+    req.body.organisation = organisationUser._id;
+
+    if (!organisationUser) {
+      throw new Error("Organisation Not Found");
+    }
+    req.body.organisation = organisationUser._id;
     //   if(inventoryType === "in" && user.role !=='donor'){
     //  throw new Error('Not a Donor Account')
     //   }
@@ -25,10 +32,10 @@ req.body.organisation = organisationUser._id;
     //  throw new Error('Not a hospital')
     //   }
     console.log("LOGGED IN USER ID:", req.userId);
-console.log("ORGANISATION FROM BODY:", req.body.organisation);
-console.log("DONOR EMAIL:", req.body.email);
-console.log("FOUND USER:", user._id);
-console.log("FOUND USER ROLE:", user.role);
+    console.log("ORGANISATION FROM BODY:", req.body.organisation);
+    console.log("DONOR EMAIL:", req.body.email);
+    console.log("FOUND USER:", user._id);
+    console.log("FOUND USER ROLE:", user.role);
 
     if (req.body.inventoryType == 'out') {
       const requestedBloodGroup = req.body.bloodGroup
@@ -88,12 +95,12 @@ console.log("FOUND USER ROLE:", user.role);
     }
     //save record
     // SAVE RECORD
-console.log("BEFORE SAVING INVENTORY:");
-console.log("REQ USER ID:", req.userId);
-console.log("ORGANISATION ID:", req.body.organisation);
-console.log("DONOR ID:", req.body.donor);
-console.log("HOSPITAL ID:", req.body.hospital);
-console.log("FULL BODY:", req.body);
+    console.log("BEFORE SAVING INVENTORY:");
+    console.log("REQ USER ID:", req.userId);
+    console.log("ORGANISATION ID:", req.body.organisation);
+    console.log("DONOR ID:", req.body.donor);
+    console.log("HOSPITAL ID:", req.body.hospital);
+    console.log("FULL BODY:", req.body);
 
     const inventory = new inventoryModel(req.body)
     await inventory.save()
@@ -121,44 +128,70 @@ console.log("FULL BODY:", req.body);
 };
 
 //get all blood records
+
 const getInventoryController = async (req, res) => {
   try {
+    const user = await usermodel.findById(req.userId);
 
-    // console.log("USER ID:", req.userId);
+    if (!user) {
+      return res.status(401).send({
+        success: false,
+        message: "User not found",
+      });
+    }
 
-    const inventory = await inventoryModel.find({ organisation: req.userId })
-      .populate('donor').populate('hospital').sort({ createdAt: -1 })
+    let filter = {};
 
-    // console.log("INVENTORY FROM DB:", inventory);
+    if (user.role === "organisation") {
+      filter = { organisation: user._id };
+    } else if (user.role !== "admin") {
+      return res.status(403).send({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    const inventory = await inventoryModel
+      .find(filter)
+      .populate("donor")
+      .populate("hospital")
+      .populate("organisation")
+      .sort({ createdAt: -1 });
 
     return res.status(200).send({
       success: true,
-      message: "get all records successfully",
+      message: "Inventory records fetched successfully",
       inventory,
-    })
+    });
   } catch (error) {
-    console.log(error)
+    console.error(error);
     return res.status(500).send({
       success: false,
-      message: 'Error In GET all Inventory',
-      error,
-    })
+      message: "Error fetching inventory",
+    });
   }
-}
+};
+
+
+
 //get hospital blood records
 const getInventoryHospitalController = async (req, res) => {
   try {
 
     // console.log("USER ID:", req.userId);
 
-    const inventory = await inventoryModel.find(req.body.filters)
+    const inventory = await inventoryModel.find({
+      inventoryType: 'out',
+      hospital: req.userId
+    })
       .populate('donor')
       .populate('hospital')
       .populate('organisation')
       .sort({ createdAt: -1 })
 
     // console.log("INVENTORY FROM DB:", inventory);
-
+    console.log("HOSPITAL ID:", req.userId);
+    console.log("HOSPITAL INVENTORY:", inventory);
     return res.status(200).send({
       success: true,
       message: "get hospital consumer records successfully",
@@ -231,27 +264,34 @@ const getDonorsController = async (req, res) => {
 
 const getHospitalController = async (req, res) => {
   try {
-    const organisation = req.userId;
-    const hospitalId = await inventoryModel.distinct('hospital', {
-      organisation,
-    });
-    const hospitals = await usermodel.find({
-      _id: { $in: hospitalId },
-    })
+    const organisation = await usermodel.findById(req.userId);
+
+    if (!organisation || organisation.role !== "organisation") {
+      return res.status(403).send({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    const hospitals = await usermodel
+      .find({ role: "hospital" })
+      .select("-password");
+
     return res.status(200).send({
       success: true,
       message: "Hospitals Data Fetched Successfully",
       hospitals,
-    })
+    });
   } catch (error) {
-    console.log(error);
+    console.log("Get Hospital Error:", error.message);
+
     return res.status(500).send({
       success: false,
-      message: 'Error In get Hospital API',
-      error
-    })
+      message: "Error In get Hospital API",
+    });
   }
 };
+
 //GET ORG PROFILES
 const getOrganisationController = async (req, res) => {
   try {

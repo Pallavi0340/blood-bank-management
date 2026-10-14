@@ -57,6 +57,7 @@ const HomePage = () => {
                 <th scope="col"> Inventory Type</th>
                 <th scope="col"> Quantity</th>
                 <th scope="col"> Donor Email</th>
+                <th scope="col">Hospital Email</th>
                 <th scope="col">Time & Date</th>
               </tr>
             </thead>
@@ -70,14 +71,24 @@ const HomePage = () => {
                     <td>{record.bloodGroup}</td>
                     <td>{record.inventoryType}</td>
                     <td>{record.quantity} (ML)</td>
-                    <td>{record.email}</td>
+                    <td>
+                      {record.inventoryType === 'in'
+                        ? record.donor?.email || record.email || '-'
+                        : '-'}
+                    </td>
+
+                    <td>
+                      {record.inventoryType === 'out'
+                        ? record.hospital?.email || '-'
+                        : '-'}
+                    </td>
                     <td>{moment(record.createdAt).format('DD/MM/YYYY hh:mm A')}</td>
                   </tr>
                 ))
 
               ) : (
                 <tr>
-                  <td colSpan='5' className='text-center'>
+                  <td colSpan='6' className='text-center'>
                     No inventory records found
                   </td>
                 </tr>

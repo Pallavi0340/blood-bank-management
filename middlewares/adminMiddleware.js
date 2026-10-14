@@ -1,22 +1,21 @@
-const userModel = require("../models/userModel");
+const userModel = require("../models/usermodel");
 module.exports = async (req, res, next) => {
   try {
-    const user = await userModel.findById(req.body.userId);
+    const user = await userModel.findById(req.userId);
     //check admin
-    if (user?.role !== "admin") {
-      return res.status(401).send({
+    if (!user || user.role !== "admin") {
+      return res.status(403).send({
         success: false,
-        message: "AUth Fialed",
+        message: "Access denied. Admin only.",
       });
-    } else {
-      next();
     }
+    next();
   } catch (error) {
-    console.log(error);
-    return res.status(401).send({
+    console.log("Admin middleware error:", error.message);
+
+    return res.status(500).send({
       success: false,
-      message: "Auth Failed, ADMIN API",
-      error,
+      message: "Error in admin authorization",
     });
   }
 };

@@ -9,13 +9,14 @@ const DonorList = () => {
   //find donar records
   const getDonars = async () => {
     try {
-      const { data } = await API.get("/admin/donar-list");
+      const response = await API.get("/admin/donar-list");
       //   console.log(data);
-      if (data?.success) {
-        setData(data?.donarData);
+      console.log("Admin donor response:", response.data);
+      if (response.data?.success) {
+        setData(response.data?.donarData);
       }
     } catch (error) {
-      console.log(error);
+      console.log("Donor API error:", error.response?.data || error.message);
     }
   };
 
