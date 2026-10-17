@@ -18,31 +18,34 @@ const Header = () => {
         <>
             <nav className='navbar'>
                 <div className='container-fluid'>
-                    <div className='navbar-brand h1'><GiHeartDrop color='red' />
-                        Vital Drop
+
+                    <div className="navbar-brand h1 vital-drop-brand">
+                        <GiHeartDrop className="vital-drop-icon" />
+                        <span>Vital Drop</span>
                     </div>
+
                     <ul className='navbar-nav flex-row'>
                         <li className='nav-item mx-3'>
                             <p className='nav-link'>
-                            <FaUser />Welcome {user?.name || user?.hospitalName || user?.OrganisationName} {" "} &nbsp;
-                            <span className="badge text-bg-secondary">{user?.role}</span>
+                                <FaUser />Welcome {user?.name || user?.hospitalName || user?.OrganisationName} {" "} &nbsp;
+                                <span className="badge text-bg-secondary">{user?.role}</span>
                             </p>
                         </li>
                         {
                             (location.pathname === "/" || location.pathname === "/donor" ||
-                              location.pathname === "/hospital"   
-                             ) ? (
-                              <li className='nav-item mx-3'>
-                                <Link to= "/analytics" className='nav-link'>
-                                Analytics
-                                </Link>
-                              </li>  
-                            ):(
-                               <li className='nav-item mx-3'>
-                                <Link to= "/" className='nav-link'>
-                                Home
-                                </Link>
-                              </li>   
+                                location.pathname === "/hospital"
+                            ) ? (
+                                <li className='nav-item mx-3'>
+                                    <Link to="/analytics" className='nav-link'>
+                                        Analytics
+                                    </Link>
+                                </li>
+                            ) : (
+                                <li className='nav-item mx-3'>
+                                    <Link to="/" className='nav-link'>
+                                        Home
+                                    </Link>
+                                </li>
                             )
                         }
 

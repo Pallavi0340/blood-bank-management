@@ -26,7 +26,7 @@ const Donor = () => {
     }, [])
     return (
         <Layout>
-            <h1> Donor Page</h1>
+            <h1 className='page-title'> Donor Page</h1>
             <table className="table container">
                 <thead>
                     <tr>

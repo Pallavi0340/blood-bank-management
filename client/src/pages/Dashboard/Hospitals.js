@@ -26,7 +26,7 @@ const Hospitals = () => {
     }, [])
     return (
         <Layout>
-            <h1> Hospital Page</h1>
+            <h1 className='page-title'> Hospital Page</h1>
             <table className="table container">
                 <thead>
                     <tr>

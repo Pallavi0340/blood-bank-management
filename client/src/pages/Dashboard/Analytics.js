@@ -1,112 +1,144 @@
+
 import React, { useState, useEffect } from "react";
-import Header from '../../components/shared/Layout/Header'
+import Header from "../../components/shared/Layout/Header";
 import API from "../../services/API";
 import moment from "moment";
 
 const Analytics = () => {
-    const [data, setData] = useState([]);
-    const [inventoryData, setInventoryData] = useState([]);
-  const colors = [
-    "#884A39",
-    "#C38154",
-    "#FFC26F",
-    "#4F709C",
-    "#4942E4",
-    "#0079FF",
-    "#FF0060",
-    "#22A699",
-  ];
+  const [data, setData] = useState([]);
+  const [inventoryData, setInventoryData] = useState([]);
 
-    //GET BLOOD GROUP DATA
   const getBloodGroupData = async () => {
     try {
       const { data } = await API.get("/analytics/bloodGroups-data");
+
       if (data?.success) {
         setData(data?.bloodGroupData);
-        // console.log(data);
       }
     } catch (error) {
       console.log(error);
     }
   };
 
-  //lifrecycle method
   useEffect(() => {
     getBloodGroupData();
   }, []);
 
-  //get function
   const getBloodRecords = async () => {
     try {
       const { data } = await API.get("/inventory/get-recent-inventory");
+
       if (data?.success) {
         setInventoryData(data?.inventory);
-        console.log(data);
       }
     } catch (error) {
       console.log(error);
     }
   };
+
   useEffect(() => {
     getBloodRecords();
   }, []);
+
   return (
     <>
-    <Header />
-       <div className="d-flex flex-row flex-wrap">
-        {data?.map((record, i) => (
-          <div
-            className="card m-2 p-1"
-            key={i}
-            style={{ width: "18rem", backgroundColor: `${colors[i]}` }}
-          >
-            <div className="card-body">
-              <h1 className="card-title bg-light text-dark text-center mb-3">
-                {record.bloodGroup}
-              </h1>
-              <p className="card-text">
-                Total In : <b>{record.totalIn}</b> (ML)
-              </p>
-              <p className="card-text">
-                Total Out : <b>{record.totalOut}</b> (ML)
-              </p>
-            </div>
-            <div className="card-footer text-light bg-dark text-center">
-              Total Available : <b>{record.availableBlood}</b> (ML)
-            </div>
-          </div>
-        ))}
-      </div>
-     <div className="container my-3">
-        <h1 className="my-3">Recent Blood Transactions</h1>
-        <table className="table ">
-          <thead>
-            <tr>
-              <th scope="col">Blood Group</th>
-              <th scope="col">Inventory Type</th>
-              <th scope="col">Quantity</th>
-              <th scope="col">Donar Email</th>
-              <th scope="col">TIme & Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inventoryData?.map((record) => (
-              <tr key={record._id}>
-                <td>{record.bloodGroup}</td>
-                <td>{record.inventoryType}</td>
-                <td>{record.quantity} (ML)</td>
-                <td>{record.email}</td>
-                <td>{moment(record.createdAt).format("DD/MM/YYYY hh:mm A")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    
-    
-      
-    </>
-  )
-}
+      <Header />
 
-export default Analytics
+      <main className="analytics-page">
+        <div className="analytics-heading">
+          <h2>Blood Inventory Overview</h2>
+          <p>Monitor blood availability and recent transactions.</p>
+        </div>
+
+        <section className="blood-group-grid">
+          {data?.map((record) => (
+            <div className="blood-group-card" key={record.bloodGroup}>
+              <div className="blood-card-top">
+                <span className="blood-card-label">Blood Group</span>
+                <span className="blood-group-badge">
+                  {record.bloodGroup}
+                </span>
+              </div>
+
+              <div className="blood-card-stats">
+                <div className="blood-stat">
+                  <span>Total In</span>
+                  <strong>{record.totalIn} <small>ML</small></strong>
+                </div>
+
+                <div className="blood-stat">
+                  <span>Total Out</span>
+                  <strong>{record.totalOut} <small>ML</small></strong>
+                </div>
+              </div>
+
+              <div className="blood-available">
+                <span>Available Blood</span>
+                <strong>
+                  {record.availableBlood} <small>ML</small>
+                </strong>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        <section className="transactions-section">
+          <div className="transactions-heading">
+            <div>
+              <h3>Recent Blood Transactions</h3>
+              <p>Latest blood inventory activity</p>
+            </div>
+
+            <span className="transaction-count">
+              {inventoryData.length} Records
+            </span>
+          </div>
+
+          <div className="table-responsive">
+            <table className="table analytics-table">
+              <thead>
+                <tr>
+                  <th>Blood Group</th>
+                  <th>Inventory Type</th>
+                  <th>Quantity</th>
+                  <th>Donor Email</th>
+                  <th>Date &amp; Time</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {inventoryData?.length > 0 ? (
+                  inventoryData.map((record) => (
+                    <tr key={record._id}>
+                      <td>
+                        <span className="transaction-blood-group">
+                          {record.bloodGroup}
+                        </span>
+                      </td>
+                      <td>{record.inventoryType}</td>
+                      <td>{record.quantity} ML</td>
+                      <td>{record.email}</td>
+                      <td>
+                        {moment(record.createdAt).format(
+                          "DD/MM/YYYY hh:mm A"
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="empty-transactions">
+                      No blood transactions available.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </>
+  );
+};
+
+export default Analytics;
